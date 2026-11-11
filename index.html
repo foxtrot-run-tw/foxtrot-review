@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Fox Trot 虛構品牌社群內容審查頁。所有內容均未發布至任何社群平台。">
+  <title>Fox Trot 審查頁</title>
+  <link rel="icon" href="images/2026-11-11/avatar.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="site-banner" role="note">
+    本頁為虛構品牌 <strong>Fox Trot</strong> 的內部審查頁，所有內容均未發布至任何社群平台。
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#all">
+        <img class="brand-mark" src="images/2026-11-11/avatar.jpg" alt="">
+        <div class="brand-text">
+          <p class="brand-name">Fox Trot</p>
+          <p class="brand-tag">跑得久，比跑得快更重要</p>
+        </div>
+      </a>
+      <div class="header-tools">
+        <label class="date-switcher">
+          <span class="date-label">切換日期</span>
+          <select id="date-select" aria-label="切換日期"></select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="site-main">
+    <p class="loading">載入審查內容中……</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>Fox Trot 審查頁 · 虛構品牌 · 不公開發布 · <span id="footer-count"></span></p>
+  </footer>
+
+  <div id="toast" class="toast" hidden role="status"></div>
+
+  <div id="copy-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="copy-modal-title">
+      <h2 id="copy-modal-title">請手動複製</h2>
+      <p>瀏覽器無法自動複製時，請直接選取下方文字。</p>
+      <textarea id="copy-modal-text" readonly></textarea>
+      <div class="modal-actions">
+        <button type="button" id="copy-modal-select" class="btn btn-primary">選取全部</button>
+        <button type="button" id="copy-modal-close" class="btn">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data/days.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
