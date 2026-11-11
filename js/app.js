@@ -2,7 +2,7 @@
   "use strict";
 
   var WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-  var PLATFORM_ORDER = ["web", "threads", "instagram", "facebook", "linkedin", "x"];
+  var PLATFORM_ORDER = ["x", "threads", "instagram", "facebook", "linkedin", "web"];
   var RESULT_LABEL = { pass: "通過", fail: "未通過", na: "不適用" };
 
   function daysData() {
@@ -164,21 +164,32 @@
     body.appendChild(el("h2", "article-title", post.title));
     if (post.dek) body.appendChild(el("p", "article-dek", post.dek));
     body.appendChild(el("p", "article-byline", "Fox Trot 編輯部 · " + formatDate(day.date) + " · 審查用，未發布"));
-    (post.sections || []).forEach(function (section) {
+    var sections = post.sections || [];
+    var firstP = -1;
+    sections.forEach(function (section, i) {
+      if (firstP === -1 && section.type === "p") firstP = i;
+    });
+    var preview = el("div", "article-preview");
+    var rest = el("div", "article-rest");
+    rest.hidden = true;
+    sections.forEach(function (section, i) {
+      var node;
       if (section.type === "h") {
-        body.appendChild(el("h3", "", section.text));
+        node = el("h3", "", section.text);
       } else if (section.type === "p") {
-        body.appendChild(el("p", "", section.text));
+        node = el("p", "", section.text);
       } else if (section.type === "ol") {
-        var list = document.createElement("ol");
+        node = document.createElement("ol");
         (section.items || []).forEach(function (item) {
-          list.appendChild(el("li", "", item));
+          node.appendChild(el("li", "", item));
         });
-        body.appendChild(list);
       }
+      if (!node) return;
+      if (i === firstP) preview.appendChild(node);
+      else rest.appendChild(node);
     });
     if (day.charCounts) {
-      body.appendChild(
+      rest.appendChild(
         el(
           "p",
           "article-count",
@@ -186,6 +197,18 @@
         )
       );
     }
+    body.appendChild(preview);
+    var toggle = el("button", "btn article-toggle", "展開全文");
+    toggle.type = "button";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.addEventListener("click", function () {
+      var open = rest.hidden;
+      rest.hidden = !open;
+      toggle.textContent = open ? "收合全文" : "展開全文";
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    body.appendChild(toggle);
+    body.appendChild(rest);
     article.appendChild(body);
     wrap.appendChild(article);
     return wrap;

@@ -454,3 +454,13 @@ a { color: var(--rust-deep); }
   .article-body { padding: 22px 18px 8px; }
   .brand-name { font-size: 20px; }
 }
+
+.article-toggle {
+  margin: 4px 0 8px;
+}
+.article-rest[hidden] {
+  display: none !important;
+}
+.article-rest {
+  margin-top: 8px;
+}
