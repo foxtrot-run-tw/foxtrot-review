@@ -8,8 +8,8 @@ from compose_news_cards import compose, make_avatar, WHITE, ORANGE, ROOT
 
 src = ROOT / "images" / "source"
 out = ROOT / "images" / "2026-11-12"
-pv = Image.open(src / "yilan-paddy-11.jpg")
-ph = Image.open(src / "yilan-paddy-169.jpg")
+pv = Image.open(src / "yilan-fallow-11.jpg")
+ph = Image.open(src / "yilan-fallow-169.jpg")
 sub = "四場台灣賽事　截止日一次看"
 foot = "Fox Trot  ・  以官方報名頁為準"
 
@@ -18,7 +18,7 @@ compose(pv, (1080, 1350), dict(focus=0.0, grad_start=0.56, grad_hard=0.72, margi
     head_pad=8, gap_after_head=36, gap_before_footer=28, subhead=sub, sub_size=48,
     footer=foot, foot_size=36, footer_bottom=44, paw=11, seed=41), out / "ig-4x5.jpg")
 
-compose(pv, (1080, 1080), dict(focus=0.0, grad_start=0.54, grad_hard=0.68, margin=64,
+compose(pv, (1080, 1080), dict(focus=0.55, grad_start=0.54, grad_hard=0.68, margin=64,
     headline=[[("報名季到了", WHITE, 92, 2)], [("先挑跑得完的", ORANGE, 128, 3)]],
     head_pad=8, gap_after_head=32, gap_before_footer=26, subhead=sub, sub_size=46,
     footer=foot, foot_size=34, footer_bottom=40, paw=10, seed=42), out / "square-1x1.jpg")

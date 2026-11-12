@@ -145,27 +145,42 @@
     });
   }
 
+  function normalizeType(type) {
+    if (type === "daily-6") return "daily-5";
+    return type || "all";
+  }
+
   function parseHash() {
     var type = "all";
     var date = "all";
+    var status = "all";
     var hash = (location.hash || "").replace(/^#/, "");
-    if (!hash || hash === "all") return { type: type, date: date };
-    if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "all", date: hash };
+    if (!hash || hash === "all") return { type: type, date: date, status: status };
+    if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "all", date: hash, status: "all" };
     if (hash.indexOf("=") !== -1) {
       var hp = new URLSearchParams(hash);
-      if (hp.get("type")) type = hp.get("type");
+      if (hp.get("type")) type = normalizeType(hp.get("type"));
       if (hp.get("date")) date = hp.get("date");
-      return { type: type, date: date };
+      if (hp.get("status")) status = hp.get("status");
+      return { type: type, date: date, status: status };
     }
-    if (hash === "daily-6" || hash === "ig-carousel") return { type: hash, date: "all" };
-    return { type: type, date: date };
+    if (hash === "daily-6" || hash === "daily-5" || hash === "ig-carousel") {
+      return { type: normalizeType(hash), date: "all", status: "all" };
+    }
+    if (hash === "pending" || hash === "approved" || hash === "returned") {
+      return { type: "all", date: "all", status: hash };
+    }
+    return { type: type, date: date, status: status };
   }
 
   function stateHash(state) {
-    if (state.type === "all" && state.date === "all") return "all";
-    if (state.type === "all" && state.date !== "all") return state.date;
-    if (state.date === "all") return "type=" + encodeURIComponent(state.type);
-    return "type=" + encodeURIComponent(state.type) + "&date=" + encodeURIComponent(state.date);
+    var parts = [];
+    if (state.type && state.type !== "all") parts.push("type=" + encodeURIComponent(state.type));
+    if (state.status && state.status !== "all") parts.push("status=" + encodeURIComponent(state.status));
+    if (state.date && state.date !== "all") parts.push("date=" + encodeURIComponent(state.date));
+    if (!parts.length) return "all";
+    if (parts.length === 1 && parts[0].indexOf("date=") === 0) return state.date;
+    return parts.join("&");
   }
 
   function postIndex() {
@@ -179,15 +194,15 @@
   }
 
   function matches(entry, state) {
-    if (state.type !== "all" && entry.type !== state.type) return false;
+    var typ = normalizeType(entry.type);
+    if (state.type !== "all" && typ !== state.type) return false;
     if (state.date !== "all" && entry.date !== state.date) return false;
+    if (state.status !== "all" && entry.status !== state.status) return false;
     return true;
   }
 
   function redirectIfUnique(state) {
     if (!document.body.classList.contains("page-home")) return false;
-    // Bare type filters stay on the directory. Only jump when a date is
-    // in the hash and it pinpoints a single post.
     if (state.date === "all") return false;
     var found = postIndex().filter(function (entry) { return matches(entry, state); });
     if (found.length === 1) {
@@ -197,14 +212,25 @@
     return false;
   }
 
+  function setTabState(root, attr, value) {
+    if (!root) return;
+    root.querySelectorAll(".type-tab").forEach(function (tab) {
+      var on = tab.getAttribute(attr) === value;
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.classList.toggle("is-active", on);
+    });
+  }
+
   function applyDirectoryFilter(state) {
     var items = document.querySelectorAll(".dir-item");
     var groups = document.querySelectorAll(".dir-group");
     var visible = 0;
     items.forEach(function (item) {
+      var typ = normalizeType(item.getAttribute("data-type"));
       var ok =
-        (state.type === "all" || item.getAttribute("data-type") === state.type) &&
-        (state.date === "all" || item.getAttribute("data-date") === state.date);
+        (state.type === "all" || typ === state.type) &&
+        (state.date === "all" || item.getAttribute("data-date") === state.date) &&
+        (state.status === "all" || item.getAttribute("data-status") === state.status);
       item.classList.toggle("is-hidden", !ok);
       if (ok) visible += 1;
     });
@@ -214,11 +240,8 @@
     });
     var empty = document.querySelector(".dir-empty");
     if (empty) empty.classList.toggle("is-visible", visible === 0);
-    document.querySelectorAll("#type-filter .type-tab").forEach(function (tab) {
-      var on = tab.getAttribute("data-type") === state.type;
-      tab.setAttribute("aria-selected", on ? "true" : "false");
-      tab.classList.toggle("is-active", on);
-    });
+    setTabState(document.getElementById("type-filter"), "data-type", state.type);
+    setTabState(document.getElementById("status-filter"), "data-status", state.status);
   }
 
   function bindDirectory() {
@@ -227,17 +250,24 @@
     if (redirectIfUnique(state)) return;
     applyDirectoryFilter(state);
 
-    document.querySelectorAll("#type-filter .type-tab").forEach(function (tab) {
-      tab.addEventListener("click", function () {
-        var next = { type: tab.getAttribute("data-type") || "all", date: "all" };
-        var hash = "#" + stateHash(next);
-        if (location.hash === hash || (hash === "#all" && !location.hash)) {
-          applyDirectoryFilter(next);
-          return;
-        }
-        location.hash = hash;
+    function bind(root, attr, key) {
+      if (!root) return;
+      root.querySelectorAll(".type-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          var next = parseHash();
+          next[key] = tab.getAttribute(attr) || "all";
+          next.date = "all";
+          var hash = "#" + stateHash(next);
+          if (location.hash === hash || (hash === "#all" && !location.hash)) {
+            applyDirectoryFilter(next);
+            return;
+          }
+          location.hash = hash;
+        });
       });
-    });
+    }
+    bind(document.getElementById("type-filter"), "data-type", "type");
+    bind(document.getElementById("status-filter"), "data-status", "status");
 
     window.addEventListener("hashchange", function () {
       var current = parseHash();

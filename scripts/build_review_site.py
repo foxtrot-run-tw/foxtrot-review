@@ -15,27 +15,33 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSET_VERSION = "20261112c"
+ASSET_VERSION = "20261112d"
 
 WEEKDAYS = "一二三四五六日"
 # datetime weekday: Mon=0 ... Sun=6; we want 日一二三四五六
 WEEKDAY_ZH = ["一", "二", "三", "四", "五", "六", "日"]
 
 TYPE_META = {
-    "daily-6": {"label": "每日六平台", "slug": "daily"},
+    "daily-5": {"label": "每日五平台", "slug": "daily"},
+    "daily-6": {"label": "每日五平台", "slug": "daily"},  # legacy alias
     "ig-carousel": {"label": "IG 輪播", "slug": "ig-carousel"},
 }
-TYPE_ORDER = ["daily-6", "ig-carousel"]
-TYPE_SORT = {"ig-carousel": 0, "daily-6": 1}
-PLATFORM_ORDER = ["x", "threads", "instagram", "facebook", "linkedin", "web"]
+TYPE_ORDER = ["daily-5", "ig-carousel"]
+TYPE_SORT = {"ig-carousel": 0, "daily-5": 1, "daily-6": 1}
+PLATFORM_ORDER = ["x", "threads", "instagram", "facebook", "linkedin"]
 PLATFORM_LABEL = {
     "x": "X",
     "threads": "Threads",
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
-    "web": "網頁文章",
 }
+STATUS_META = {
+    "pending": {"label": "待審", "css": "pending"},
+    "approved": {"label": "通過", "css": "approved"},
+    "returned": {"label": "退回", "css": "returned"},
+}
+STATUS_ORDER = ["pending", "returned", "approved"]
 
 
 def esc(value) -> str:
@@ -51,7 +57,31 @@ def load_days() -> list:
 
 
 def entry_type(day: dict) -> str:
-    return day.get("type") or "daily-6"
+    typ = day.get("type") or "daily-5"
+    if typ == "daily-6":
+        return "daily-5"
+    return typ
+
+
+def review_id(day: dict) -> str:
+    return day.get("reviewId") or ""
+
+
+def entry_status(day: dict) -> str:
+    return day.get("status") or "pending"
+
+
+def status_label(status: str) -> str:
+    meta = STATUS_META.get(status)
+    return meta["label"] if meta else status
+
+
+def version_label(day: dict) -> str:
+    v = day.get("version")
+    if v is None or v == "":
+        return ""
+    s = str(v)
+    return s if s.lower().startswith("v") else f"v{s}"
 
 
 def type_label(typ: str) -> str:
@@ -62,7 +92,7 @@ def type_label(typ: str) -> str:
 def slug_of(day: dict) -> str:
     typ = entry_type(day)
     suffix = TYPE_META.get(typ, {}).get("slug", typ)
-    if typ == "daily-6":
+    if typ in ("daily-5", "daily-6"):
         return f"{day['date']}-daily"
     if day.get("id"):
         return day["id"]
@@ -445,15 +475,19 @@ def render_platform(rel: str, day: dict, key: str) -> str:
 
 def render_day_head(day: dict) -> str:
     typ = entry_type(day)
-    badges = (
-        f'<span class="badge badge-type">{esc(type_label(typ))}</span>'
-        + (
-            f'<span class="badge">{esc(day.get("cycle"))} 日 · {esc(day.get("cycleLabel") or "")}</span>'
-            if day.get("cycle")
-            else ""
-        )
-        + f'<span class="badge badge-date">{esc(format_date(day["date"]))}</span>'
-    )
+    st = entry_status(day)
+    badges = ""
+    if review_id(day):
+        badges += f'<span class="badge badge-id">{esc(review_id(day))}</span>'
+    badges += f'<span class="badge badge-status badge-status-{esc(st)}">{esc(status_label(st))}</span>'
+    if version_label(day):
+        badges += f'<span class="badge badge-version">{esc(version_label(day))}</span>'
+    badges += f'<span class="badge badge-type">{esc(type_label(typ))}</span>'
+    if day.get("cycle"):
+        badges += f'<span class="badge">{esc(day.get("cycle"))} 日 · {esc(day.get("cycleLabel") or "")}</span>'
+    badges += f'<span class="badge badge-date">{esc(format_date(day["date"]))}</span>'
+    if day.get("plannedPublishDate"):
+        badges += f'<span class="badge badge-plan">預定發布 {esc(format_date(day["plannedPublishDate"]))}</span>'
     summary = f'<p class="day-summary">{esc(day.get("summary"))}</p>' if day.get("summary") else ""
     return (
         '<header class="day-head">'
@@ -461,6 +495,37 @@ def render_day_head(day: dict) -> str:
         f'<h1 class="day-title">{esc(title_of(day))}</h1></div>'
         f"{summary}"
         "</header>"
+    )
+
+
+def render_review_history(day: dict) -> str:
+    hist = day.get("reviewHistory") or []
+    if not hist:
+        return ""
+    items = []
+    for ev in hist:
+        st = ev.get("status") or ""
+        ver = ev.get("version")
+        ver_s = ""
+        if ver is not None and ver != "":
+            s = str(ver)
+            ver_s = s if s.lower().startswith("v") else f"v{s}"
+        when = ev.get("at") or ev.get("date") or ""
+        when_s = format_date(when) if when and len(when) == 10 else when
+        meta = " · ".join(p for p in [when_s, ver_s, status_label(st) if st else ""] if p)
+        note = f'<p class="check-note">{esc(ev.get("note"))}</p>' if ev.get("note") else ""
+        items.append(
+            "<li><div class=\"check-head\"><span class=\"check-item\">"
+            + esc(meta)
+            + "</span></div>"
+            + note
+            + "</li>"
+        )
+    return (
+        '<section class="panel" id="review-history">'
+        "<h3>審查紀錄</h3>"
+        f'<ul class="check-list">{"".join(items)}</ul>'
+        "</section>"
     )
 
 
@@ -588,7 +653,7 @@ def render_post_page(day: dict, days: list) -> str:
     else:
         cards = "".join(render_platform(rel, day, key) for key in PLATFORM_ORDER)
         body = f'<div class="cards">{cards}</div>'
-    main = head + pager + body + render_sources(day) + render_checks(day)
+    main = head + pager + body + render_sources(day) + render_checks(day) + render_review_history(day)
     desc = f"Fox Trot 審查頁：{title_of(day)}。所有內容均未發布至任何社群平台。"
     return shell(
         title=f"{title_of(day)} · Fox Trot 審查頁",
@@ -597,6 +662,54 @@ def render_post_page(day: dict, days: list) -> str:
         current_nav="",
         rel=rel,
         main=main,
+    )
+
+
+def render_pending_summary(days: list) -> str:
+    counts = {key: 0 for key in STATUS_ORDER}
+    for day in days:
+        st = entry_status(day)
+        counts[st] = counts.get(st, 0) + 1
+    pending = [d for d in days if entry_status(d) == "pending"]
+    pills = "".join(
+        f'<span class="status-count badge-status-{esc(st)}">{esc(status_label(st))} {counts.get(st, 0)}</span>'
+        for st in STATUS_ORDER
+    )
+    if pending:
+        items = []
+        for day in pending:
+            href = "posts/" + post_filename(day)
+            plan = (
+                f'預定發布 {format_date(day["plannedPublishDate"])}'
+                if day.get("plannedPublishDate")
+                else ""
+            )
+            meta = " · ".join(
+                p
+                for p in [
+                    review_id(day),
+                    version_label(day),
+                    type_label(entry_type(day)),
+                    plan,
+                ]
+                if p
+            )
+            items.append(
+                f'<li><a href="{esc(href)}"><strong>{esc(review_id(day) or title_of(day))}</strong> {esc(title_of(day))}</a>'
+                f'<span>{esc(meta)}</span></li>'
+            )
+        body = (
+            f'<p>目前有 <strong>{len(pending)}</strong> 則待審，請優先查看。</p>'
+            f'<ul class="pending-list">{"".join(items)}</ul>'
+        )
+    else:
+        body = "<p>目前沒有待審的貼文。</p>"
+    return (
+        '<section class="pending-summary" id="pending">\n'
+        "<h2>審查進度</h2>\n"
+        f'<p class="status-counts">{pills}</p>\n'
+        f"{body}\n"
+        "</section>\n"
     )
 
 
@@ -611,11 +724,17 @@ def render_directory(days: list) -> str:
         if typ not in types_present:
             types_present.append(typ)
 
-    tabs = ['<button type="button" class="type-tab is-active" role="tab" data-type="all" aria-selected="true">全部</button>']
+    type_tabs = ['<button type="button" class="type-tab is-active" role="tab" data-type="all" aria-selected="true">全部</button>']
     for typ in types_present:
-        tabs.append(
+        type_tabs.append(
             f'<button type="button" class="type-tab" role="tab" data-type="{esc(typ)}" aria-selected="false">{esc(type_label(typ))}</button>'
         )
+    status_tabs = ['<button type="button" class="type-tab is-active" role="tab" data-status="all" aria-selected="true">全部狀態</button>']
+    for st in STATUS_ORDER:
+        if any(entry_status(d) == st for d in days):
+            status_tabs.append(
+                f'<button type="button" class="type-tab" role="tab" data-status="{esc(st)}" aria-selected="false">{esc(status_label(st))}</button>'
+            )
 
     groups = OrderedDict()
     for day in days:
@@ -626,20 +745,29 @@ def render_directory(days: list) -> str:
         cards = []
         for day in items:
             typ = entry_type(day)
+            st = entry_status(day)
             href = "posts/" + post_filename(day)
             src = asset(rel, thumb_src(day))
             summary = day.get("summary") or ""
             topic_badge = ""
             if day.get("cycle"):
                 topic_badge = f'<span class="badge">{esc(day.get("cycle"))} 日 · {esc(day.get("cycleLabel") or "")}</span>'
+            plan = ""
+            if day.get("plannedPublishDate"):
+                plan = f'<span class="badge badge-plan">預定發布 {esc(format_date(day["plannedPublishDate"]))}</span>'
+            rid = f'<span class="badge badge-id">{esc(review_id(day))}</span>' if review_id(day) else ""
+            ver = f'<span class="badge badge-version">{esc(version_label(day))}</span>' if version_label(day) else ""
             cards.append(
-                f'<article class="dir-item" data-type="{esc(typ)}" data-date="{esc(iso)}" data-slug="{esc(slug_of(day))}">'
+                f'<article class="dir-item" data-type="{esc(typ)}" data-status="{esc(st)}" data-date="{esc(iso)}" data-slug="{esc(slug_of(day))}">'
                 f'<a href="{esc(href)}">'
                 f'<img class="dir-thumb" src="{esc(src)}" alt="{esc(thumb_alt(day))}">'
                 "<div>"
                 '<p class="dir-meta">'
+                f"{rid}"
+                f'<span class="badge badge-status badge-status-{esc(st)}">{esc(status_label(st))}</span>'
+                f"{ver}"
                 f'<span class="badge badge-type">{esc(type_label(typ))}</span>'
-                f"{topic_badge}"
+                f"{topic_badge}{plan}"
                 f'<span class="badge badge-date">{esc(format_date(iso))}</span>'
                 "</p>"
                 f"<h3>{esc(title_of(day))}</h3>"
@@ -658,6 +786,8 @@ def render_directory(days: list) -> str:
             {
                 "date": day["date"],
                 "type": entry_type(day),
+                "status": entry_status(day),
+                "reviewId": review_id(day),
                 "slug": slug_of(day),
                 "href": "posts/" + post_filename(day),
                 "title": title_of(day),
@@ -670,9 +800,10 @@ def render_directory(days: list) -> str:
     return (
         '<section class="section-block" id="directory">\n'
         "<h2>貼文目錄</h2>\n"
-        '<p>依日期由新到舊排列。點進去可看完整文案、圖片、資料來源與該則自我檢查。此目錄不必開 JavaScript 就能瀏覽；版型篩選是額外功能。</p>\n'
+        '<p>依日期由新到舊排列。每則有穩定編號與審查狀態。點進去可看完整文案、圖片、資料來源、自我檢查與審查紀錄。此目錄不必開 JavaScript 就能瀏覽；篩選是額外功能。</p>\n'
         '<div class="directory-toolbar">'
-        f'<div id="type-filter" class="type-filter" role="tablist" aria-label="依版型篩選">{"".join(tabs)}</div>'
+        f'<div id="type-filter" class="type-filter" role="tablist" aria-label="依版型篩選">{"".join(type_tabs)}</div>'
+        f'<div id="status-filter" class="type-filter" role="tablist" aria-label="依狀態篩選">{"".join(status_tabs)}</div>'
         "</div>\n"
         '<p class="dir-empty">這個篩選目前沒有貼文。</p>\n'
         f'{"".join(groups_html)}\n'
@@ -683,9 +814,10 @@ def render_directory(days: list) -> str:
 
 def render_sitemap(days: list) -> str:
     links = [
-        ("index.html", "首頁", "品牌策略、主題規劃與貼文目錄"),
-        ("quality.html", "品質把關原則", "五項檢查、圖文規則與工作邊界"),
-        ("workflow.html", "工作流程", "製作步驟、工具、時間與改版紀錄"),
+        ("index.html", "首頁", "品牌策略、主題規劃、審查進度與貼文目錄"),
+        ("quality.html", "品質把關原則", "檢查項目、圖文規則與工作邊界"),
+        ("workflow.html", "工作流程", "批次產出、審查流程與改版紀錄"),
+        ("docs/作業規範.md", "作業規範", "完整規則文本，供倉內備查"),
     ]
     items = [
         f'<li><a href="{esc(href)}">{esc(label)}</a><span>{esc(note)}</span></li>'
@@ -693,7 +825,16 @@ def render_sitemap(days: list) -> str:
     ]
     for day in days:
         href = "posts/" + post_filename(day)
-        note = f'{format_date(day["date"])} · {type_label(entry_type(day))}'
+        note = " · ".join(
+            p
+            for p in [
+                review_id(day),
+                status_label(entry_status(day)),
+                format_date(day["date"]),
+                type_label(entry_type(day)),
+            ]
+            if p
+        )
         items.append(f'<li><a href="{esc(href)}">{esc(title_of(day))}</a><span>{esc(note)}</span></li>')
     return (
         '<section class="section-block" id="sitemap">\n'
@@ -713,18 +854,17 @@ def write(path: Path, text: str) -> None:
 def main() -> None:
     days = load_days()
     intro = load_fragment("home_intro.html")
-    home_main = (
-        intro
-        + "\n"
-        + render_directory(days)
-        + "\n"
-        + render_sitemap(days)
-    )
+    pending = render_pending_summary(days)
+    if "<!--PENDING-->" in intro:
+        intro = intro.replace("<!--PENDING-->", pending, 1)
+        home_main = intro + "\n" + render_directory(days) + "\n" + render_sitemap(days)
+    else:
+        home_main = pending + "\n" + intro + "\n" + render_directory(days) + "\n" + render_sitemap(days)
     write(
         ROOT / "index.html",
         shell(
             title="Fox Trot 審查頁",
-            description="Fox Trot 虛構品牌社群內容審查頁。品牌策略、主題規劃與貼文目錄。所有內容均未發布至任何社群平台。",
+            description="Fox Trot 虛構品牌社群內容審查頁。品牌策略、審查進度、主題規劃與貼文目錄。所有內容均未發布至任何社群平台。",
             body_class="page-home",
             current_nav="home",
             rel="",
