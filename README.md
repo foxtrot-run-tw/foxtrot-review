@@ -1,8 +1,17 @@
 # Fox Trot 審查頁
 
-虛構跑步品牌 **Fox Trot**（中間分開、只用英文名稱）的社群內容審查頁。這是靜態網站，沒有建置步驟，也不依賴外部套件，可直接放上 GitHub Pages。
+虛構跑步品牌 **Fox Trot**（中間分開、只用英文名稱）的社群內容審查頁。這是靜態網站，頁面由腳本事先生成 HTML，不依賴外部套件，可直接放上 GitHub Pages。
 
-本頁只供內部品質控制，**不會、也不應把內容發布到任何社群平台**。`index.html` 已加上 `<meta name="robots" content="noindex">`。
+本站只供內部品質控制，**不會、也不應把內容發布到任何社群平台**。各頁已加上 `<meta name="robots" content="noindex">`。
+
+站點結構：
+
+- `index.html`：首頁。品牌核心策略、主題規劃，以及依日期排列的貼文目錄。
+- `posts/*.html`：每一則貼文的獨立頁（文案、圖、資料來源、該則自我檢查）。
+- `quality.html`：整體品質把關原則。
+- `workflow.html`：工作流程、工具、時間與改版紀錄。
+
+正文都寫在靜態 HTML 裡，關掉 JavaScript 也讀得到。JavaScript 只負責複製按鈕、輪播左右切換，以及首頁目錄的版型篩選。
 
 ## 本機預覽
 
@@ -12,19 +21,24 @@
 python3 -m http.server 8080
 ```
 
-然後打開 `http://localhost:8080/`。用檔案協定（`file://`）也能看版面，但複製文字可能被瀏覽器限制；若自動複製失敗，頁面會改開手動複製視窗。
+然後打開 `http://localhost:8080/`。用檔案協定（`file://`）也能看版面，但複製文字可能被瀏覽器限制；若自動複製失敗，頁面會改開手動複製視窗。檢查時請順便關掉 JavaScript 看一次，確認目錄、貼文、來源與圖片都還在。
 
 ## 目錄
 
 ```
 foxtrot-review/
-  index.html                 # 單一固定入口
+  index.html                 # 首頁：策略、規劃、目錄
+  quality.html               # 品質把關原則
+  workflow.html              # 工作流程
+  posts/                     # 各則貼文的獨立靜態頁（由腳本生成）
   css/style.css              # 品牌強調色為橘色 #FF7A1A
-  js/app.js                  # 讀取資料、依日期與版型篩選、渲染各類條目
-  data/days.js               # 所有審查條目；新增一則只要 append 一筆
+  js/site.js                 # 複製、輪播操作、目錄篩選與舊版 hash 轉址
+  data/days.js               # 所有審查條目的資料來源
+  data/content/              # 首頁引言、品質與流程頁的文案片段
   images/YYYY-MM-DD/         # 每日六平台配圖（ig-4x5、wide-16x9、square-1x1、avatar）
   images/carousel-01/        # IG 輪播定稿（slide-01.jpg…、contact-sheet.jpg、打包 zip）
   images/source/             # 已核准的紀實照片原圖，供組圖腳本重用
+  scripts/build_review_site.py   # 生成首頁與各靜態頁；每次上線要改 ASSET_VERSION
   scripts/compose_news_cards.py  # 每日新聞卡組圖腳本（照片 + 程式排字）
   scripts/compose_carousel_01.py # IG 輪播組圖腳本
   README.md
@@ -41,8 +55,14 @@ foxtrot-review/
    - `wide-16x9.jpg`：Facebook、LinkedIn、網頁文章（1920×1080）
    - `square-1x1.jpg`：X、Threads（1080×1080）
    - `avatar.jpg`：站點小圖／favicon（可沿用同一張，或做成與當日照片一致的小裁切；不要出現可辨識的臉）
-3. 打開 `data/days.js`，在 `window.FOX_TROT_DAYS = [ ... ]` 陣列追加一個物件。沒有寫 `type` 時，預設為 `daily-6`（每日六平台）。若是 Instagram 輪播，設 `type: "ig-carousel"` 並依下方輪播格式填資料。頁面會依 `date` 由新到舊排序，同一天則輪播排在六平台前面。
-4. 用 `node --check data/days.js` 與 `node --check js/app.js` 確認語法無誤，再本機開頁檢查。第一眼應先看到短版社群貼文。
+3. 打開 `data/days.js`，在 `window.FOX_TROT_DAYS = [ ... ]` 陣列追加一個物件。沒有寫 `type` 時，預設為 `daily-6`（每日六平台）。若是 Instagram 輪播，設 `type: "ig-carousel"` 並依下方輪播格式填資料。目錄會依 `date` 由新到舊排序，同一天則輪播排在六平台前面。
+4. 用 `node --check data/days.js` 確認語法無誤。打開 `scripts/build_review_site.py`，把檔案開頭的 `ASSET_VERSION` 改成新值（例如日期加序號），再執行：
+
+```bash
+python3 scripts/build_review_site.py
+```
+
+腳本會重寫 `index.html`、`quality.html`、`workflow.html` 與 `posts/*.html`。生成的 HTML 請視為產出檔，不要手動改。本機開首頁與該則貼文頁檢查（含關掉 JavaScript）。CSS 與 JS 以 `?v=ASSET_VERSION` 做 cache-busting，所以每次要推上 GitHub Pages 都必須改版本號。
 
 路徑一律用相對路徑（例如 `images/2026-11-11/ig-4x5.jpg`），這樣在 GitHub Pages 子路徑也能用。
 
@@ -105,19 +125,19 @@ foxtrot-review/
 
 沒寫 `type` 時，該則視為 `daily-6`。同一個 `date` 可以同時有每日六平台與 IG 輪播兩則，不會互相覆蓋。輪播條目請加唯一的 `id`（例如 `2026-11-12-ig-carousel`），以免和當日六平台錨點衝突。
 
-## 版型篩選與網址
+## 版型篩選與舊網址
 
-審查頁上方有分段控制：**全部 / 每日六平台 / IG 輪播**。選項依資料裡實際出現的 `type` 產生；要加新版型時，在 `js/app.js` 的 `TYPE_META`、`TYPE_ORDER` 與 `ENTRY_RENDERERS` 登錄，並在 `data/days.js` 寫上對應的 `type`。日期下拉選單仍可跳到單一日期，且會跟著目前的版型篩選只列出有內容的日期。
+首頁目錄有分段控制：**全部 / 每日六平台 / IG 輪播**，選項依資料裡實際出現的 `type` 產生。要加新版型時，在 `scripts/build_review_site.py` 的 `TYPE_META` 登錄，補上對應的頁面生成邏輯，並在 `data/days.js` 寫上 `type`。
 
-篩選狀態寫在網址 hash，方便分享：
+舊的單頁 hash 仍盡量可用：
 
-- `#all` 或首頁：全部版型、全部日期（最新在上）
-- `#2026-11-11`：該日所有版型（相容既有日期連結）
-- `#type=daily-6`：只看每日六平台
-- `#type=ig-carousel`：只看 IG 輪播
-- `#type=ig-carousel&date=2026-11-12`：只看某日的 IG 輪播
+- `#all`：停在首頁目錄，顯示全部
+- `#type=daily-6`、`#type=ig-carousel`：停在首頁，只顯示該版型
+- `#2026-11-11`：若當天只有一則，會轉到該則獨立頁
+- `#2026-11-12`：當天有兩則，留在目錄並只顯示當天
+- `#type=ig-carousel&date=2026-11-12`：轉到該則獨立頁
 
-也相容查詢字串，例如 `?type=ig-carousel`。
+也相容查詢字串，例如 `?type=ig-carousel`。新的分享連結請直接用各則頁面路徑，例如 `posts/2026-11-12-ig-carousel.html`。
 
 ## 怎麼新增一則 IG 輪播
 
@@ -151,7 +171,7 @@ foxtrot-review/
 }
 ```
 
-審查頁會顯示可左右滑動（scroll-snap）的 4:5 預覽、張數計數、上一張／下一張、每張下載、打包下載、總覽圖、可複製的 caption、hashtags、各張替代文字、來源與自我檢查。仍不得把內容發布到任何社群平台。
+生成後，該則會出現在首頁目錄，並有獨立頁 `posts/YYYY-MM-DD-ig-carousel.html`。頁上有可左右滑動的 4:5 預覽、張數計數、上一張／下一張、每張下載、打包下載、總覽圖、可複製的 caption、hashtags、各張替代文字、來源與自我檢查。即使關掉 JavaScript，八張圖、文案與來源仍會出現在 HTML 裡。仍不得把內容發布到任何社群平台。
 
 ## 寫作與圖片規則（每天都要遵守）
 
@@ -176,11 +196,11 @@ foxtrot-review/
 5. LinkedIn
 6. 網頁文章（預設只顯示標題、導言與第一段，按「展開全文」才看完整文；「複製文字」仍複製全文）
 
-資料來源與品質自我檢查仍放在六張卡片後面。這個順序寫在 `js/app.js` 的 `PLATFORM_ORDER`，不要改回長文在前。
+資料來源與品質自我檢查放在六張卡片後面。這個順序寫在 `scripts/build_review_site.py` 的 `PLATFORM_ORDER`，不要改回長文在前。
 
 ## 圖片風格（未來每日預設沿用）
 
-配圖採 **AI 生成的寫實紀實風照片**，再由程式排成新聞卡。場景盡量像真實台灣（例如台北／新北河堤、社區跑道或公園路徑：防洪牆、河堤階梯與坡道、遠方高架或橋梁、帶窗籬與屋頂水塔的中層公寓、路旁機車、檳榔或榕／雨樹；潮濕、帶薄霧的清晨或黃昏）。不要 HDR、不要過亮過滑的皮膚、不要夢幻光暈。
+配圖採 **AI 生成的寫實紀實風照片**，再由程式排成新聞卡。場景盡量像真實台灣跑者會經過的地方（例如河堤自行車道、社區跑道、公園路徑或階梯、潮濕或帶薄霧的清晨與黃昏）。不要靠破舊公寓或雜亂街屋來「證明這是台灣」。不要 HDR、不要過亮過滑的皮膚、不要夢幻光暈。構圖可以半身、局部特寫或無人風景，不要連張都是全身背影。
 
 新聞卡版面：
 
@@ -209,6 +229,6 @@ Logo 與文字：
 python3 scripts/compose_news_cards.py
 ```
 
-## 日期切換
+## 品質原則與流程頁
 
-審查頁上方「切換日期」可看單一日期，或選「全部日期（最新在上）」。與版型篩選可一併使用；完整網址寫法見「版型篩選與網址」。
+整體把關標準在 `quality.html`，工作步驟、工具與改版紀錄在 `workflow.html`，都可以從首頁頂部導覽進入。各則貼文的資料來源與當則自我檢查只放在該則獨立頁，不堆在首頁。

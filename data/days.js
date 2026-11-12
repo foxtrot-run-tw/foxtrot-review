@@ -1,6 +1,6 @@
 /* Fox Trot 審查頁資料。
- * 把新物件 append 進 FOX_TROT_DAYS 即可。頁面依 date 由新到舊排序。
- * 沒有 type 時預設為 "daily-6"（每日六平台）。其他版型例如 "ig-carousel"。
+ * 把新物件 append 進 FOX_TROT_DAYS 後，執行 python3 scripts/build_review_site.py。
+ * 頁面依 date 由新到舊排序。沒有 type 時預設為 "daily-6"。
  * 完整欄位說明見 README.md。
  */
 window.FOX_TROT_DAYS = [
