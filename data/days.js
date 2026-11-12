@@ -1,9 +1,179 @@
 /* Fox Trot 審查頁資料。
- * 未來每日執行：把新的一日物件 append 進 FOX_TROT_DAYS 陣列即可。
- * 頁面會依 date 由新到舊排序，不需要把最新的放第一筆，但建議最新的放最上面方便檢查。
- * 完整欄位說明見 /workspace/foxtrot-review/README.md
+ * 把新物件 append 進 FOX_TROT_DAYS 即可。頁面依 date 由新到舊排序。
+ * 沒有 type 時預設為 "daily-6"（每日六平台）。其他版型例如 "ig-carousel"。
+ * 完整欄位說明見 README.md。
  */
 window.FOX_TROT_DAYS = [
+  {
+    "id": "2026-11-12-ig-carousel",
+    "type": "ig-carousel",
+    "date": "2026-11-12",
+    "cycle": "A",
+    "cycleLabel": "傷害預防與恢復",
+    "topic": "新手跑者常見的 5 個傷害警訊",
+    "summary": "Instagram 八張輪播預覽：封面「這 5 種痛，別硬跑」，加上五個警訊、檢查清單與行動呼籲。僅供審查，尚未發布至任何社群平台。",
+    "displayName": "Fox Trot",
+    "handle": "foxtrot",
+    "images": {
+      "avatar": {
+        "src": "images/2026-11-11/avatar.jpg",
+        "alt": "Fox Trot 頭像：河堤與水塔場景裁切，無人入鏡",
+        "ratio": "1:1"
+      }
+    },
+    "slides": [
+      {
+        "src": "images/carousel-01/slide-01.jpg",
+        "alt": "公園紅色跑道上，一名跑者停下，半身特寫、臉不在畫面裡，一手按在膝蓋前側；圖上大標「這 5 種痛，別硬跑」，並提示往左滑。",
+        "filename": "foxtrot-carousel-01-slide-01.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-02.jpg",
+        "alt": "紅色跑道側面特寫，膝下正在移動，步伐看起來不對稱、一腳較為小心；圖上寫「1/5 步伐走樣了」，並說明痛到跛或改跑姿時應先停下來。",
+        "filename": "foxtrot-carousel-01-slide-02.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-03.jpg",
+        "alt": "坐下的跑者特寫，手指按在小腿脛骨上的一個點，沒有瘀青或傷口；圖上寫「2/5 按一個點就很痛」，提醒先停跑檢查，可能是骨骼壓力的警訊，但不能自行判定。",
+        "filename": "foxtrot-carousel-01-slide-03.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-04.jpg",
+        "alt": "黃昏公園步道，一名跑者放慢停下，半身、臉不在畫面裡，一手按著膝蓋；圖上寫「3/5 愈跑愈痛」，說明跑當中愈來愈明顯或隔天還在痛時，應先減量或停跑。",
+        "filename": "foxtrot-carousel-01-slide-04.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-05.jpg",
+        "alt": "夜晚家中，小腿與腳踝擱在枕頭上，上面放著未貼標的冰敷袋，燈光照著，腳踝沒有誇張腫脹；圖上寫「4/5 腫了，或晚上還痛」，建議盡快找醫師或物理治療師。",
+        "filename": "foxtrot-carousel-01-slide-05.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-06.jpg",
+        "alt": "公園水泥階梯，一名跑者正在下樓，一手按在膝蓋前側，臉不在畫面裡；圖上寫「5/5 上下樓膝蓋前側痛」，提醒上下樓梯或蹲下不舒服時先不要硬跑，若持續請尋求評估。",
+        "filename": "foxtrot-carousel-01-slide-06.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-07.jpg",
+        "alt": "公園木椅上，一名跑者坐下，雙手檢查自己的小腿，臉不在畫面裡；下方是五項警訊檢查清單，並寫「疼痛持續，請看醫師或物理治療師」。",
+        "filename": "foxtrot-carousel-01-slide-07.jpg"
+      },
+      {
+        "src": "images/carousel-01/slide-08.jpg",
+        "alt": "清晨河濱步道，兩名跑者背對鏡頭並肩慢走收操；大標「先停一下，比硬跑完更厲害」，邀請收藏並分享給跑友，無帳號或連結。",
+        "filename": "foxtrot-carousel-01-slide-08.jpg"
+      }
+    ],
+    "contactSheet": {
+      "src": "images/carousel-01/contact-sheet.jpg",
+      "alt": "八張 4:5 輪播縮圖總覽，由左上到右下依序為封面與第 1 到第 8 張。",
+      "filename": "foxtrot-carousel-01-contact-sheet.jpg"
+    },
+    "zip": {
+      "src": "images/carousel-01/foxtrot-carousel-01.zip",
+      "filename": "foxtrot-carousel-01.zip"
+    },
+    "caption": "痛一點再跑就會好？不一定。\n\n新手跑者最常踩的坑，不是速度不夠，是明明有警訊還硬跑。\n\n這 5 種情況，建議先停下來對一下：\n\n1. 痛到步伐走樣、開始跛了\n2. 骨頭上一個點按了就很痛\n3. 跑當中愈跑愈痛，或隔天還在痛\n4. 腫了，或休息、夜間還在痛\n5. 上下樓或蹲下時，膝蓋前側不舒服\n\n這不是診斷，也不是保證碰到就一定受傷。只是值得先停跑、值得檢查的警訊。\n\n疼痛持續，請看醫師或物理治療師。",
+    "hashtags": [
+      "#FoxTrot",
+      "#跑步",
+      "#傷害預防",
+      "#新手跑者",
+      "#路跑",
+      "#台灣路跑",
+      "#跑步訓練",
+      "#慢跑生活",
+      "#跑者日常",
+      "#運動科學"
+    ],
+    "copyText": "痛一點再跑就會好？不一定。\n\n新手跑者最常踩的坑，不是速度不夠，是明明有警訊還硬跑。\n\n這 5 種情況，建議先停下來對一下：\n\n1. 痛到步伐走樣、開始跛了\n2. 骨頭上一個點按了就很痛\n3. 跑當中愈跑愈痛，或隔天還在痛\n4. 腫了，或休息、夜間還在痛\n5. 上下樓或蹲下時，膝蓋前側不舒服\n\n這不是診斷，也不是保證碰到就一定受傷。只是值得先停跑、值得檢查的警訊。\n\n疼痛持續，請看醫師或物理治療師。\n\n#FoxTrot #跑步 #傷害預防 #新手跑者 #路跑 #台灣路跑 #跑步訓練 #慢跑生活 #跑者日常 #運動科學",
+    "sources": [
+      {
+        "title": "Knee pain and other running injuries",
+        "authors": "",
+        "outlet": "NHS",
+        "url": "https://www.nhs.uk/live-well/exercise/knee-pain-and-other-running-injuries/",
+        "note": "頁面載明 Page last reviewed: 25 November 2022。用於跑步相關膝痛與就醫時機的一般說明。"
+      },
+      {
+        "title": "Injury prevention advice for runners",
+        "outlet": "Newcastle Hospitals NHS Foundation Trust",
+        "url": "https://www.newcastle-hospitals.nhs.uk/services/injury-prevention-advice-for-runners/",
+        "note": "頁面載明 Page last updated: 04/02/2026。休息時仍痛、明顯腫脹或無法承重應就醫。"
+      },
+      {
+        "title": "Stress fractures — Symptoms and causes",
+        "outlet": "Mayo Clinic",
+        "url": "https://www.mayoclinic.org/diseases-conditions/stress-fractures/symptoms-causes/syc-20354057",
+        "note": "頁面載明 April 25, 2025。局部骨壓痛、活動後加重、休息或夜間仍痛與腫脹等描述。"
+      },
+      {
+        "title": "Bone stress injuries and stress fractures: Advice and management",
+        "authors": "Dr Ralph Smith, OxSport",
+        "outlet": "Oxford University Hospitals NHS Foundation Trust",
+        "url": "https://www.ouh.nhs.uk/media/wpdnexqu/86719fractures.pdf",
+        "note": "單張載明 November 2026。局限骨頭壓痛與夜間痛等需儘快就醫的警訊。"
+      },
+      {
+        "title": "Medial tibial stress syndrome",
+        "outlet": "NHS Greater Glasgow and Clyde, Right Decisions",
+        "url": "https://www.rightdecisions.scot.nhs.uk/ggc-msk-foot-and-ankle/lower-leg/medial-tibial-stress-syndrome",
+        "note": "頁面載明 Last reviewed: 20/01/2026。點狀骨壓痛應先視為壓力性骨折直到被排除；文案只寫「可能是骨骼壓力的警訊，不是自己能判定的」。"
+      },
+      {
+        "title": "When Is It Safe to Run? Applying Four Pain Rules to Running Participation",
+        "authors": "Vincent HK, Vincent KR",
+        "outlet": "Current Sports Medicine Reports. 2017;16(3):122",
+        "url": "https://pmr.med.ufl.edu/wordpress/files/2022/09/Four-pain-rules-to-running-participation.pdf",
+        "note": "打開的是此 PDF。跛行或代償步態應減量或停止；跑當中疼痛加重應立即減量或停止；關節痛不應在運動後 24 小時仍持續或加重。"
+      },
+      {
+        "title": "Patellofemoral pain",
+        "authors": "Crossley KM, Callaghan MJ, van Linschoten R",
+        "outlet": "BMJ 2015;351:h3939",
+        "url": "https://www.bmj.com/content/351/bmj.h3939",
+        "note": "已打開該頁並讀到 bottom line 與書目資料；全文主體需登入，未打開完整內文。Bottom line：髕股疼痛常見為膝蓋後或周圍、與上下樓、蹲下、跑步等負荷動作相關。不寫成已確診「跑者膝」。"
+      },
+      {
+        "title": "Stress Fractures",
+        "outlet": "Cleveland Clinic",
+        "url": "https://my.clevelandclinic.org/health/diseases/15841-stress-fractures",
+        "note": "頁面載明 Medically Reviewed, last updated 05/23/2023。"
+      },
+      {
+        "title": "Knee cap pain (patellofemoral joint pain) patient leaflet (PL938.1, March 2021)",
+        "outlet": "King's College Hospital NHS Foundation Trust",
+        "url": "https://www.kch.nhs.uk/wp-content/uploads/2023/01/pl-938.1-knee-cap-pain-patellofemoral-joint-pain.pdf",
+        "note": "列出上下樓、蹲下、跑步為常見誘發動作。"
+      }
+    ],
+    "selfCheck": [
+      {
+        "item": "傷害與醫療相關用詞",
+        "result": "pass",
+        "note": "五個項目都寫成值得先停跑、值得檢查的警訊，不做診斷、不保證碰到就一定受傷，也不承諾療效。各張與 caption 皆寫明疼痛持續應看醫師或物理治療師。"
+      },
+      {
+        "item": "賽事資訊",
+        "result": "na",
+        "note": "本則為傷害警訊輪播，未列出任何賽事日期、地點或報名期限。"
+      },
+      {
+        "item": "研究引用與結論分寸",
+        "result": "pass",
+        "note": "只列出真正打開過的網址。結論維持關聯與衛教警訊，不誇大成因或保證。BMJ 一文僅採用已讀到的 bottom line，並註明全文主體未打開。"
+      },
+      {
+        "item": "圖片限制",
+        "result": "pass",
+        "note": "八張皆為 4:5（1080×1350），中文標題由程式以 Noto Sans CJK TC Bold 排字，重點字為橘色 #FF7A1A。臉不在畫面裡或僅見後腦；無真實或虛構 logo、無可讀招牌文字、無誇張傷勢或腫脹。已在完整尺寸與 360px 檢查手、腳與鞋面。第 2 張是跑道側面正在移動的步伐，但跛行幅度較含蓄，不是非常明顯的一腳代償。"
+      },
+      {
+        "item": "六個平台版本是否依平台調整",
+        "result": "na",
+        "note": "本則是 Instagram 輪播實驗，只做 IG 八張＋caption 與 hashtag，沒有 X、Threads、Facebook、LinkedIn 或網頁文章版本。"
+      }
+    ]
+  },
   {
     "date": "2026-11-12",
     "cycle": "B",

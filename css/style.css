@@ -464,3 +464,213 @@ a { color: var(--rust-deep); }
 .article-rest {
   margin-top: 8px;
 }
+
+.header-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.type-filter {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--card);
+}
+.type-filter .type-tab {
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  line-height: 1.2;
+}
+.type-filter .type-tab:last-child { border-right: 0; }
+.type-filter .type-tab:hover { color: var(--rust-deep); }
+.type-filter .type-tab.is-active,
+.type-filter .type-tab[aria-selected="true"] {
+  background: var(--rust);
+  color: var(--ink);
+}
+
+.badge-type {
+  background: var(--rust);
+  color: var(--ink);
+}
+
+.carousel-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .carousel-layout {
+    grid-template-columns: minmax(280px, 420px) 1fr;
+  }
+}
+.carousel-preview { min-width: 0; }
+.carousel-frame {
+  position: relative;
+  background: #111;
+}
+.carousel-scroller {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  outline: none;
+}
+.carousel-scroller::-webkit-scrollbar { display: none; }
+.carousel-scroller:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--rust);
+}
+.carousel-slide {
+  flex: 0 0 100%;
+  margin: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.carousel-slide img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+}
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 2;
+}
+.carousel-nav:hover { background: #fff; }
+.carousel-nav:disabled { opacity: 0.35; cursor: default; }
+.carousel-prev { left: 10px; }
+.carousel-next { right: 10px; }
+.carousel-counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(10, 10, 10, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 4px 10px;
+  z-index: 2;
+}
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px 0;
+}
+.carousel-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #d4c7b8;
+  cursor: pointer;
+}
+.carousel-dot.is-active,
+.carousel-dot[aria-selected="true"] {
+  background: var(--rust);
+  width: 16px;
+  border-radius: 999px;
+}
+.carousel-meta { min-width: 0; }
+.carousel-side-panel { margin-top: 0; }
+.carousel-all-actions { margin-bottom: 14px; }
+.contact-sheet-link {
+  display: block;
+  margin: 0 0 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.contact-sheet-link img { width: 100%; height: auto; }
+.slide-download-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.slide-download-list li {
+  padding: 12px 14px;
+  background: #faf6ef;
+  border-radius: 12px;
+}
+.slide-download-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.slide-alt {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-tools {
+    width: 100%;
+    justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .type-filter {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .type-filter .type-tab {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 8px 8px;
+    white-space: nowrap;
+  }
+  .date-switcher, .date-switcher select { width: 100%; }
+}

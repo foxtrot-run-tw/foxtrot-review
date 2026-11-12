@@ -20,11 +20,13 @@ python3 -m http.server 8080
 foxtrot-review/
   index.html                 # 單一固定入口
   css/style.css              # 品牌強調色為橘色 #FF7A1A
-  js/app.js                  # 讀取資料、依日期排序與切換、渲染六張卡片
-  data/days.js               # 所有日期的內容；新增一天只要 append 一筆
-  images/YYYY-MM-DD/         # 該日配圖（ig-4x5、wide-16x9、square-1x1、avatar）
+  js/app.js                  # 讀取資料、依日期與版型篩選、渲染各類條目
+  data/days.js               # 所有審查條目；新增一則只要 append 一筆
+  images/YYYY-MM-DD/         # 每日六平台配圖（ig-4x5、wide-16x9、square-1x1、avatar）
+  images/carousel-01/        # IG 輪播定稿（slide-01.jpg…、contact-sheet.jpg、打包 zip）
   images/source/             # 已核准的紀實照片原圖，供組圖腳本重用
-  scripts/compose_news_cards.py  # 新聞卡組圖腳本（照片 + 程式排字）
+  scripts/compose_news_cards.py  # 每日新聞卡組圖腳本（照片 + 程式排字）
+  scripts/compose_carousel_01.py # IG 輪播組圖腳本
   README.md
 ```
 
@@ -39,7 +41,7 @@ foxtrot-review/
    - `wide-16x9.jpg`：Facebook、LinkedIn、網頁文章（1920×1080）
    - `square-1x1.jpg`：X、Threads（1080×1080）
    - `avatar.jpg`：站點小圖／favicon（可沿用同一張，或做成與當日照片一致的小裁切；不要出現可辨識的臉）
-3. 打開 `data/days.js`，在 `window.FOX_TROT_DAYS = [ ... ]` 陣列**最前面或最後面**追加一個物件。頁面會依 `date` 由新到舊排序，不一定要手動排順序，但最新的放最上面較好檢查。
+3. 打開 `data/days.js`，在 `window.FOX_TROT_DAYS = [ ... ]` 陣列追加一個物件。沒有寫 `type` 時，預設為 `daily-6`（每日六平台）。若是 Instagram 輪播，設 `type: "ig-carousel"` 並依下方輪播格式填資料。頁面會依 `date` 由新到舊排序，同一天則輪播排在六平台前面。
 4. 用 `node --check data/days.js` 與 `node --check js/app.js` 確認語法無誤，再本機開頁檢查。第一眼應先看到短版社群貼文。
 
 路徑一律用相對路徑（例如 `images/2026-11-11/ig-4x5.jpg`），這樣在 GitHub Pages 子路徑也能用。
@@ -100,6 +102,57 @@ foxtrot-review/
 
 `imageKey` 必須對應到當天 `images` 裡的鍵（`ig`、`wide`、`square`、`avatar`）。
 
+
+沒寫 `type` 時，該則視為 `daily-6`。同一個 `date` 可以同時有每日六平台與 IG 輪播兩則，不會互相覆蓋。輪播條目請加唯一的 `id`（例如 `2026-11-12-ig-carousel`），以免和當日六平台錨點衝突。
+
+## 版型篩選與網址
+
+審查頁上方有分段控制：**全部 / 每日六平台 / IG 輪播**。選項依資料裡實際出現的 `type` 產生；要加新版型時，在 `js/app.js` 的 `TYPE_META`、`TYPE_ORDER` 與 `ENTRY_RENDERERS` 登錄，並在 `data/days.js` 寫上對應的 `type`。日期下拉選單仍可跳到單一日期，且會跟著目前的版型篩選只列出有內容的日期。
+
+篩選狀態寫在網址 hash，方便分享：
+
+- `#all` 或首頁：全部版型、全部日期（最新在上）
+- `#2026-11-11`：該日所有版型（相容既有日期連結）
+- `#type=daily-6`：只看每日六平台
+- `#type=ig-carousel`：只看 IG 輪播
+- `#type=ig-carousel&date=2026-11-12`：只看某日的 IG 輪播
+
+也相容查詢字串，例如 `?type=ig-carousel`。
+
+## 怎麼新增一則 IG 輪播
+
+1. 用 `scripts/compose_carousel_01.py`（或後續輪播腳本）產出 4:5、1080×1350 的幻燈片，目視檢查後複製到 `images/carousel-XX/`，檔名建議 `slide-01.jpg` 起跳，並附 `contact-sheet.jpg`。可再打一份 zip 方便「打包下載」。
+2. 在 `data/days.js` 追加一筆，必要欄位如下：
+
+```js
+{
+  id: "2026-11-12-ig-carousel",  // 必填，全站唯一
+  type: "ig-carousel",
+  date: "2026-11-12",
+  cycle: "A",                    // 可選，用於循環標記
+  cycleLabel: "傷害預防與恢復",
+  topic: "輪播主題短標",
+  summary: "一兩句摘要",
+  displayName: "Fox Trot",
+  handle: "foxtrot",
+  images: {
+    avatar: { src: "images/2026-11-11/avatar.jpg", alt: "……", ratio: "1:1" }
+  },
+  slides: [
+    { src: "images/carousel-01/slide-01.jpg", alt: "第 1 張替代文字", filename: "foxtrot-carousel-01-slide-01.jpg" }
+  ],
+  contactSheet: { src: "images/carousel-01/contact-sheet.jpg", alt: "總覽", filename: "foxtrot-carousel-01-contact-sheet.jpg" },
+  zip: { src: "images/carousel-01/foxtrot-carousel-01.zip", filename: "foxtrot-carousel-01.zip" },
+  caption: "貼文文案",
+  hashtags: ["#FoxTrot", "#跑步"],
+  copyText: "caption + 空行 + hashtags",
+  sources: [ /* 同每日格式，只列真正打開過的網址 */ ],
+  selfCheck: [ /* 同每日五項檢查；本則若只有 IG，六平台那項可標 na */ ]
+}
+```
+
+審查頁會顯示可左右滑動（scroll-snap）的 4:5 預覽、張數計數、上一張／下一張、每張下載、打包下載、總覽圖、可複製的 caption、hashtags、各張替代文字、來源與自我檢查。仍不得把內容發布到任何社群平台。
+
 ## 寫作與圖片規則（每天都要遵守）
 
 - 品牌名稱固定寫成 **Fox Trot**，不要寫成 Foxtrot 或 FoxTrot（帳號 handle 除外）。
@@ -158,4 +211,4 @@ python3 scripts/compose_news_cards.py
 
 ## 日期切換
 
-審查頁上方「切換日期」可看單一日期，或選「全部日期（最新在上）」。網址可用 `#2026-11-11` 或 `#all` 深連結。
+審查頁上方「切換日期」可看單一日期，或選「全部日期（最新在上）」。與版型篩選可一併使用；完整網址寫法見「版型篩選與網址」。
